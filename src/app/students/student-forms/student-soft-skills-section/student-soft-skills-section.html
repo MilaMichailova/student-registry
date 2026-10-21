@@ -1,0 +1,32 @@
+<nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
+  <nz-collapse-panel
+    nzHeader="Личные качества"
+    [nzActive]="active"
+    (nzActiveChange)="onActiveChange($event)"
+  >
+    @for (skill of softSkillsArray.controls; track skill; let i = $index) {
+      <nz-form-item>
+        <nz-form-control [nzValidateStatus]="skill" nzErrorTip="Заполните поле или удалите его">
+          <div class="string-row">
+            <input nz-input [formControl]="skill" placeholder="Коммуникабельность, лидерство…" />
+            <button
+              type="button"
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              aria-label="Удалить качество"
+              (click)="removeSoftSkill(i)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    }
+
+    <button type="button" nz-button nzType="dashed" nzBlock (click)="addSoftSkill()">
+      <nz-icon nzType="plus" /> Добавить качество
+    </button>
+  </nz-collapse-panel>
+</nz-collapse>

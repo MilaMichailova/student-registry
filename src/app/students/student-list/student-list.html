@@ -1,0 +1,205 @@
+<div class="app-page">
+  <div class="app-page-header">
+    <h1 class="app-page-title">Студенты</h1>
+    <div class="app-page-actions">
+      <button
+        nz-button
+        nzType="text"
+        type="button"
+        nz-tooltip
+        nzTooltipTitle="Вернуть исходный набор демо-данных"
+        (click)="resetDemoData()"
+      >
+        <nz-icon nzType="reload" />
+        Сбросить демо
+      </button>
+      <a nz-button nzType="primary" routerLink="/students/new">
+        <nz-icon nzType="plus" />
+        Добавить студента
+      </a>
+    </div>
+  </div>
+
+  <div class="filters" role="search">
+    <nz-input-wrapper class="filters__search">
+      <nz-icon nzInputPrefix nzType="search" />
+      <input
+        nz-input
+        type="search"
+        placeholder="ФИО или группа"
+        aria-label="Поиск по ФИО или группе"
+        [ngModel]="search()"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </nz-input-wrapper>
+
+    <nz-select
+      class="filters__select"
+      nzMode="multiple"
+      nzPlaceHolder="Статус"
+      nzAllowClear
+      [nzMaxTagCount]="1"
+      [ngModel]="statuses()"
+      (ngModelChange)="onStatusesChange($event)"
+    >
+      @for (option of statusOptions; track option.value) {
+        <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
+      }
+    </nz-select>
+
+    <nz-select
+      class="filters__select"
+      nzMode="multiple"
+      nzPlaceHolder="Форма обучения"
+      nzAllowClear
+      [nzMaxTagCount]="1"
+      [ngModel]="studyForms()"
+      (ngModelChange)="onStudyFormsChange($event)"
+    >
+      @for (option of studyFormOptions; track option.value) {
+        <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
+      }
+    </nz-select>
+
+    @if (hasFilters()) {
+      <button nz-button nzType="link" type="button" (click)="resetFilters()">
+        Сбросить фильтры
+      </button>
+    }
+  </div>
+
+  <nz-table
+    #table
+    nzSize="middle"
+    nzShowSizeChanger
+    [nzFrontPagination]="false"
+    [nzData]="page().items"
+    [nzTotal]="page().totalItems"
+    [nzPageIndex]="pageNumber()"
+    [nzPageSize]="pageSize()"
+    [nzPageSizeOptions]="pageSizeOptions"
+    [nzLoading]="loading()"
+    [nzShowTotal]="totalTemplate"
+    [nzNoResult]="emptyTemplate"
+    [nzScroll]="{ x: '1040px' }"
+    (nzPageIndexChange)="onPageIndexChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+  >
+    <thead>
+      <tr>
+        <th
+          nzWidth="240px"
+          [nzSortOrder]="sortOrder(Column.FullName)"
+          (nzSortOrderChange)="onSortChange(Column.FullName, $event)"
+        >
+          ФИО
+        </th>
+        <th nzWidth="90px">Группа</th>
+        <th
+          [nzSortOrder]="sortOrder(Column.Direction)"
+          (nzSortOrderChange)="onSortChange(Column.Direction, $event)"
+        >
+          Направление
+        </th>
+        <th
+          nzWidth="170px"
+          [nzSortOrder]="sortOrder(Column.Course)"
+          (nzSortOrderChange)="onSortChange(Column.Course, $event)"
+        >
+          Курс
+        </th>
+        <th
+          nzWidth="190px"
+          [nzSortOrder]="sortOrder(Column.Status)"
+          (nzSortOrderChange)="onSortChange(Column.Status, $event)"
+        >
+          Статус
+        </th>
+        <th
+          nzWidth="150px"
+          [nzSortOrder]="sortOrder(Column.StudyForm)"
+          (nzSortOrderChange)="onSortChange(Column.StudyForm, $event)"
+        >
+          Форма
+        </th>
+        <th nzWidth="96px" nzRight><span class="visually-hidden">Действия</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.data; track row.studentId) {
+        <tr [class.row--pending]="isPending(row.studentId)">
+          <td>
+            <button
+              type="button"
+              class="name-button"
+              nz-popover
+              nzPopoverTrigger="click"
+              nzPopoverPlacement="rightTop"
+              [nzPopoverContent]="popoverTemplate"
+              [nzPopoverVisible]="openedPopoverId() === row.studentId"
+              (nzPopoverVisibleChange)="openedPopoverId.set($event ? row.studentId : null)"
+            >
+              {{ row.fullName }}
+            </button>
+            <ng-template #popoverTemplate>
+              <app-student-short-info-popover
+                [studentId]="row.studentId"
+                (closed)="openedPopoverId.set(null)"
+                (deleteClick)="deleteStudent(row)"
+              />
+            </ng-template>
+          </td>
+          <td>{{ row.group || '—' }}</td>
+          <td>{{ row.directionName || '—' }}</td>
+          <td>{{ getCourseLabel(row.course) }}</td>
+          <td>
+            <nz-tag [nzColor]="statusColors[row.status]">{{ getStatusLabel(row.status) }}</nz-tag>
+          </td>
+          <td>{{ getStudyFormLabel(row.studyForm) }}</td>
+          <td nzRight class="row-actions">
+            <a
+              nz-button
+              nzType="text"
+              nzSize="small"
+              nz-tooltip
+              nzTooltipTitle="Редактировать"
+              [routerLink]="['/students', row.studentId]"
+              [attr.aria-label]="'Редактировать: ' + row.fullName"
+            >
+              <nz-icon nzType="edit" />
+            </a>
+            <button
+              nz-button
+              nzType="text"
+              nzSize="small"
+              nzDanger
+              type="button"
+              nz-tooltip
+              nzTooltipTitle="Удалить"
+              [nzLoading]="isPending(row.studentId)"
+              [attr.aria-label]="'Удалить: ' + row.fullName"
+              (click)="deleteStudent(row)"
+            >
+              @if (!isPending(row.studentId)) {
+                <nz-icon nzType="delete" />
+              }
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+
+  <ng-template #totalTemplate let-total>Всего: {{ total }}</ng-template>
+  <ng-template #emptyTemplate>
+    <div class="empty-state">
+      @if (hasFilters()) {
+        <p>По заданным условиям никого не нашлось.</p>
+        <button nz-button type="button" (click)="resetFilters()">Сбросить фильтры</button>
+      } @else {
+        <p>Пока нет ни одного студента.</p>
+        <a nz-button nzType="primary" routerLink="/students/new">Добавить студента</a>
+      }
+    </div>
+  </ng-template>
+</div>

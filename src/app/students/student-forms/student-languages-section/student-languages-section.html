@@ -1,0 +1,51 @@
+<nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
+  <nz-collapse-panel nzHeader="Языки" [nzActive]="active" (nzActiveChange)="onActiveChange($event)">
+    <div class="repeatable-list">
+      @for (language of languagesArray.controls; track language; let i = $index) {
+        <nz-card
+          nzSize="small"
+          class="repeatable-card"
+          [nzTitle]="'Язык ' + (i + 1)"
+          [nzExtra]="removeButton"
+        >
+          <ng-template #removeButton>
+            <button
+              type="button"
+              nz-button
+              nzType="text"
+              nzDanger
+              nzSize="small"
+              aria-label="Удалить язык"
+              (click)="removeLanguage(i)"
+            >
+              <nz-icon nzType="delete" />
+            </button>
+          </ng-template>
+
+          <div [formGroup]="getLanguageGroup(i)" class="app-form-grid">
+            <nz-form-item>
+              <nz-form-label>Язык</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="name" placeholder="Английский, немецкий…" />
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label>Уровень</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="level" nzPlaceHolder="Выберите уровень" nzAllowClear>
+                  @for (level of levels; track level) {
+                    <nz-option [nzLabel]="level" [nzValue]="level" />
+                  }
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-card>
+      }
+    </div>
+
+    <button type="button" nz-button nzType="dashed" nzBlock (click)="addLanguage()">
+      <nz-icon nzType="plus" /> Добавить язык
+    </button>
+  </nz-collapse-panel>
+</nz-collapse>

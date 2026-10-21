@@ -1,0 +1,41 @@
+// Сборка NG-ZORRO из исходников со своей геометрией.
+// Режим CSS-переменных сохраняется: цвета по-прежнему задаёт APP_THEME (src/app/theme.ts).
+@import 'ng-zorro-antd/ng-zorro-antd.variable.less';
+
+// Скругления — единственный источник. Less вычисляет переменные лениво,
+// поэтому переопределение после импорта применяется ко всем компонентам библиотеки.
+@app-radius: 10px;
+@app-radius-sm: 4px;
+@app-radius-lg: 16px;
+
+@border-radius-base: @app-radius;
+@border-radius-sm: @app-radius-sm;
+@border-radius-lg: @app-radius-lg;
+@control-border-radius: @app-radius;
+@btn-border-radius-base: @app-radius;
+@btn-border-radius-sm: @app-radius-sm;
+@card-radius: @app-radius;
+@modal-border-radius: @app-radius-lg;
+@table-border-radius-base: @app-radius;
+
+// Таблица карточкой: NG-ZORRO скругляет только верхние углы шапки,
+// поэтому рамку и нижние углы добавляем на уровне темы, а не в каждом компоненте.
+.@{table-prefix-cls} {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: @table-border-radius-base;
+  box-shadow: var(--app-shadow-sm);
+
+  // Последняя строка без собственной нижней границы — её заменяет рамка таблицы.
+  &-tbody > tr:last-child > td {
+    border-bottom: 0;
+  }
+}
+
+// Те же значения — для собственных стилей приложения.
+:root {
+  --app-radius: @app-radius;
+  --app-radius-sm: @app-radius-sm;
+  --app-radius-lg: @app-radius-lg;
+  --app-radius-pill: 9999px;
+}

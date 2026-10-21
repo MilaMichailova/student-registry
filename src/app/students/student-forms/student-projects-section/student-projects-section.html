@@ -1,0 +1,200 @@
+<nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
+  <nz-collapse-panel
+    nzHeader="Учебные проекты"
+    [nzActive]="active"
+    (nzActiveChange)="onActiveChange($event)"
+  >
+    <ng-template #periodTag let-project>
+      @if (project.value.dateStart || project.value.dateEnd) {
+        <span class="project-period">
+          <nz-icon nzType="calendar" nzTheme="outline" />
+          {{ project.value.dateStart | date: 'LLL yyyy' }} —
+          {{
+            project.value.dateEnd
+              ? (project.value.dateEnd | date: 'LLL yyyy')
+              : 'по настоящее время'
+          }}
+        </span>
+      }
+    </ng-template>
+
+    <nz-collapse
+      cdkDropList
+      [cdkDropListData]="projectsArray.controls"
+      (cdkDropListDropped)="dropProject($event)"
+      class="projects-drop-list"
+      [nzBordered]="false"
+      nzExpandIconPosition="end"
+    >
+      @for (project of projectsArray.controls; track project; let i = $index) {
+        <nz-collapse-panel
+          [nzHeader]="projectHeader"
+          cdkDrag
+          [cdkDragDisabled]="projectsArray.length <= 1"
+          [nzActive]="expandedPanels.has(project)"
+          (nzActiveChange)="onPanelActiveChange(project, $event)"
+          class="project-panel"
+          [class.project-panel--invalid]="project.invalid && project.touched"
+        >
+          <div *cdkDragPreview class="drag-preview">
+            <nz-icon nzType="drag" nzTheme="outline" />
+            <span class="project-title">{{ getProjectTitle(i, project) }}</span>
+          </div>
+
+          <ng-template #projectHeader>
+            <div class="project-header">
+              <span
+                cdkDragHandle
+                class="drag-handle"
+                title="Переместить проект"
+                (click)="$event.stopPropagation()"
+              >
+                <nz-icon nzType="drag" nzTheme="outline" />
+              </span>
+              <span class="project-title">{{ getProjectTitle(i, project) }}</span>
+              <ng-container *ngTemplateOutlet="periodTag; context: { $implicit: project }" />
+              <button
+                type="button"
+                nz-button
+                nzType="text"
+                nzDanger
+                nzSize="small"
+                title="Удалить проект"
+                aria-label="Удалить проект"
+                (click)="$event.stopPropagation(); removeProject(i)"
+              >
+                <nz-icon nzType="delete" />
+              </button>
+            </div>
+          </ng-template>
+
+          <div [formGroup]="getProjectGroup(i)">
+            <div class="app-form-grid">
+              <nz-form-item>
+                <nz-form-label>Дисциплина</nz-form-label>
+                <nz-form-control>
+                  <input nz-input formControlName="discipline" placeholder="Веб-программирование" />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>Название проекта</nz-form-label>
+                <nz-form-control>
+                  <input nz-input formControlName="projectName" placeholder="Название проекта" />
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label nzRequired>Период с</nz-form-label>
+                <nz-form-control
+                  [nzValidateStatus]="getProjectGroup(i).controls.dateStart"
+                  nzErrorTip="Поле обязательно для заполнения"
+                >
+                  <nz-date-picker formControlName="dateStart" nzFormat="dd.MM.yyyy" />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>Период по</nz-form-label>
+                <nz-form-control>
+                  <nz-date-picker formControlName="dateEnd" nzFormat="dd.MM.yyyy" />
+                </nz-form-control>
+              </nz-form-item>
+
+              <nz-form-item>
+                <nz-form-label>Роль в проекте</nz-form-label>
+                <nz-form-control>
+                  <input
+                    nz-input
+                    formControlName="role"
+                    placeholder="Фронтенд, аналитик, тимлид…"
+                  />
+                </nz-form-control>
+              </nz-form-item>
+              <nz-form-item>
+                <nz-form-label>Команда</nz-form-label>
+                <nz-form-control>
+                  <input nz-input formControlName="teamInfo" placeholder="Размер команды, роли" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+
+            <nz-form-item>
+              <nz-form-label>Технологии</nz-form-label>
+              <nz-form-control nzExtra="Через запятую">
+                <input nz-input formControlName="technologies" placeholder="Angular, TypeScript" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+              <nz-form-label>Описание</nz-form-label>
+              <nz-form-control>
+                <textarea
+                  nz-input
+                  formControlName="description"
+                  cdkTextareaAutosize
+                  [cdkAutosizeMinRows]="2"
+                  placeholder="Кратко о проекте"
+                ></textarea>
+              </nz-form-control>
+            </nz-form-item>
+
+            <!-- Вложенные списки строк: FormArray<FormControl> внутри группы проекта. -->
+            <div class="app-form-grid">
+              @for (stringList of stringLists; track stringList.name) {
+                @let list = getListArray(i, stringList.name);
+                <nz-form-item>
+                  <nz-form-label>{{ stringList.label }}</nz-form-label>
+                  <nz-form-control>
+                    <div
+                      [formArrayName]="stringList.name"
+                      cdkDropList
+                      [cdkDropListData]="list.controls"
+                      (cdkDropListDropped)="dropListItem($event, i, stringList.name)"
+                      class="string-drop-list"
+                    >
+                      @for (item of list.controls; track item; let j = $index) {
+                        <div class="string-item" cdkDrag [cdkDragDisabled]="list.length <= 1">
+                          <span cdkDragHandle class="drag-icon" title="Перетащить">
+                            <nz-icon nzType="drag" nzTheme="outline" />
+                          </span>
+                          <input
+                            nz-input
+                            [formControlName]="j"
+                            [placeholder]="stringList.placeholder"
+                          />
+                          <button
+                            type="button"
+                            nz-button
+                            nzType="text"
+                            nzDanger
+                            nzSize="small"
+                            aria-label="Удалить пункт"
+                            (click)="removeListItem(i, stringList.name, j)"
+                          >
+                            <nz-icon nzType="delete" />
+                          </button>
+                        </div>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      nz-button
+                      nzType="dashed"
+                      nzBlock
+                      (click)="addListItem(i, stringList.name)"
+                    >
+                      <nz-icon nzType="plus" /> {{ stringList.addLabel }}
+                    </button>
+                  </nz-form-control>
+                </nz-form-item>
+              }
+            </div>
+          </div>
+        </nz-collapse-panel>
+      }
+    </nz-collapse>
+
+    <button type="button" nz-button nzType="dashed" nzBlock (click)="addProject()" class="add-btn">
+      <nz-icon nzType="plus" /> Добавить проект
+    </button>
+  </nz-collapse-panel>
+</nz-collapse>

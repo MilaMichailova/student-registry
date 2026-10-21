@@ -1,0 +1,41 @@
+<nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
+  <nz-collapse-panel
+    nzHeader="Контакты"
+    [nzActive]="active"
+    (nzActiveChange)="onActiveChange($event)"
+  >
+    <div [formGroup]="formGroup" class="app-form-grid app-form-grid--3">
+      <nz-form-item>
+        <nz-form-label>E-mail</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="formGroup.controls.email"
+          nzErrorTip="Введите корректный email"
+        >
+          <input nz-input formControlName="email" placeholder="name@example.edu" type="email" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Телефон</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="phone" placeholder="+7 (___) ___-__-__" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Telegram</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="formGroup.controls.telegram"
+          [nzErrorTip]="telegramError"
+        >
+          <input nz-input formControlName="telegram" placeholder="username, @username или t.me/…" />
+        </nz-form-control>
+        <ng-template #telegramError let-control>
+          @if (control?.errors?.['telegramInvalid']; as error) {
+            {{ error }}
+          }
+        </ng-template>
+      </nz-form-item>
+    </div>
+  </nz-collapse-panel>
+</nz-collapse>

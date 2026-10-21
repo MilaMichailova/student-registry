@@ -1,0 +1,157 @@
+<nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
+  <nz-collapse-panel
+    nzHeader="Основная информация"
+    [nzActive]="active"
+    (nzActiveChange)="onActiveChange($event)"
+  >
+    <div [formGroup]="formGroup" class="main-info-grid">
+      <nz-form-item>
+        <nz-form-label>Фамилия</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="lastName" placeholder="Введите фамилию" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Имя</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="firstName" placeholder="Введите имя" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Отчество</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="middleName" placeholder="Введите отчество" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Дата рождения</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="formGroup.controls.dateOfBirth"
+          nzErrorTip="Поле обязательно для заполнения"
+        >
+          <nz-date-picker
+            formControlName="dateOfBirth"
+            nzPlaceHolder="Выберите дату"
+            nzFormat="dd.MM.yyyy"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Группа</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="group" placeholder="Например, ИТ-231" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Курс</nz-form-label>
+        <nz-form-control [nzValidateStatus]="formGroup.controls.course" nzErrorTip="Выберите курс">
+          <nz-select formControlName="course" nzPlaceHolder="Выберите курс">
+            @for (option of courseOptions; track option.value) {
+              <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div class="main-info-grid__wide main-info-grid__pair">
+        @if (dictionaryState() === 'error') {
+          <div class="dictionary-load-error" role="alert">
+            <span>Не удалось загрузить словарь направлений.</span>
+            <button nz-button nzType="default" type="button" (click)="retryDictionaryLoad()">
+              Повторить
+            </button>
+          </div>
+        } @else {
+          <nz-form-item>
+            <nz-form-label nzRequired>Направление подготовки</nz-form-label>
+            <nz-form-control
+              [nzValidateStatus]="formGroup.controls.directionId"
+              nzErrorTip="Поле обязательно для заполнения"
+            >
+              @if (dictionaryState() === 'loaded') {
+                <nz-select
+                  formControlName="directionId"
+                  nzPlaceHolder="Выберите направление"
+                  nzShowSearch
+                  nzAllowClear
+                  [nzOptions]="directionOptions()"
+                  [nzOpen]="primarySelectOpen()"
+                  (nzOpenChange)="onPrimarySelectOpenChange($event)"
+                />
+              } @else {
+                <nz-select nzPlaceHolder="Загрузка направлений..." nzDisabled />
+              }
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>Дополнительные направления</nz-form-label>
+            <nz-form-control>
+              @if (dictionaryState() === 'loaded') {
+                <nz-select
+                  formControlName="additionalDirectionIds"
+                  nzMode="multiple"
+                  nzPlaceHolder="Выберите направления"
+                  nzShowSearch
+                  nzAllowClear
+                  [nzOptions]="directionOptions()"
+                  [nzOpen]="additionalSelectOpen()"
+                  (nzOpenChange)="onAdditionalSelectOpenChange($event)"
+                />
+              } @else {
+                <nz-select nzMode="multiple" nzPlaceHolder="Загрузка направлений..." nzDisabled />
+              }
+            </nz-form-control>
+          </nz-form-item>
+        }
+      </div>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Статус</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="formGroup.controls.status"
+          nzErrorTip="Выберите статус"
+        >
+          <nz-select formControlName="status" nzPlaceHolder="Выберите статус">
+            @for (option of statusOptions; track option.value) {
+              <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Форма обучения</nz-form-label>
+        <nz-form-control
+          [nzValidateStatus]="formGroup.controls.studyForm"
+          nzErrorTip="Выберите форму обучения"
+        >
+          <nz-select formControlName="studyForm" nzPlaceHolder="Выберите форму обучения">
+            @for (option of studyFormOptions; track option.value) {
+              <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
+            }
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item class="main-info-grid__about">
+        <nz-form-label>О себе</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            formControlName="about"
+            cdkTextareaAutosize
+            [cdkAutosizeMinRows]="3"
+            [cdkAutosizeMaxRows]="6"
+            placeholder="Интересы, цели, чем хочется заниматься"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </nz-collapse-panel>
+</nz-collapse>

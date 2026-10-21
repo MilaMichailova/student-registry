@@ -1,0 +1,91 @@
+<div class="short-info">
+  @if (loading()) {
+    <div class="short-info__loading"><nz-spin nzSimple /></div>
+  } @else if (data(); as info) {
+    <div class="short-info__header">
+      <div>
+        <div class="short-info__name">{{ fullName() || 'Без имени' }}</div>
+        <div class="short-info__summary">{{ summary() }}</div>
+      </div>
+      <button
+        type="button"
+        nz-button
+        nzType="text"
+        nzSize="small"
+        aria-label="Закрыть"
+        (click)="closed.emit()"
+      >
+        <nz-icon nzType="close" />
+      </button>
+    </div>
+
+    <nz-tag class="short-info__status" [nzColor]="statusColors[info.status]">{{
+      statusLabel()
+    }}</nz-tag>
+
+    <dl class="short-info__list">
+      @if (directionsText()) {
+        <dt>Направления</dt>
+        <dd>{{ directionsText() }}</dd>
+      }
+      @if (dateOfBirth()) {
+        <dt>Дата рождения</dt>
+        <dd>{{ dateOfBirth() }}</dd>
+      }
+      @if (info.contacts.email; as email) {
+        <dt>E-mail</dt>
+        <dd>
+          <a [href]="'mailto:' + email">{{ email }}</a>
+          <ng-container *ngTemplateOutlet="copyButton; context: { $implicit: email }" />
+        </dd>
+      }
+      @if (info.contacts.mobilePhoneNumber; as phone) {
+        <dt>Телефон</dt>
+        <dd>
+          {{ phone }}
+          <ng-container *ngTemplateOutlet="copyButton; context: { $implicit: phone }" />
+        </dd>
+      }
+      @if (telegramLink(); as telegram) {
+        <dt>Telegram</dt>
+        <dd>
+          <a [href]="telegram" target="_blank" rel="noopener">{{
+            info.contacts.telegramUsername
+          }}</a>
+        </dd>
+      }
+    </dl>
+
+    <ng-template #copyButton let-value>
+      <button
+        type="button"
+        class="copy-button"
+        nz-tooltip
+        nzTooltipTitle="Скопировать"
+        aria-label="Скопировать"
+        (click)="copyToClipboard(value)"
+      >
+        <nz-icon nzType="copy" />
+      </button>
+    </ng-template>
+
+    <div class="short-info__actions">
+      <button nz-button nzSize="small" type="button" (click)="copyStudentInfo()">
+        <nz-icon nzType="copy" /> Скопировать
+      </button>
+      <a
+        nz-button
+        nzSize="small"
+        [routerLink]="['/students', info.studentId]"
+        (click)="closed.emit()"
+      >
+        <nz-icon nzType="edit" /> Открыть
+      </a>
+      <button nz-button nzSize="small" nzDanger type="button" (click)="deleteClick.emit()">
+        <nz-icon nzType="delete" />
+      </button>
+    </div>
+  } @else {
+    <p class="short-info__error">Данные недоступны.</p>
+  }
+</div>

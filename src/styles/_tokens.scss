@@ -1,0 +1,31 @@
+// Токены оформления. Компоненты используют только их, без «сырых» цветов.
+// Брендовые цвета приходят из APP_THEME (src/app/theme.ts) через переменные NG-ZORRO.
+:root {
+  // Бренд
+  --app-primary: var(--ant-primary-color);
+  --app-primary-hover: var(--ant-primary-color-hover);
+  --app-primary-bg: #e9f5ff;
+  // Голубой #25a1f4 на белом даёт 2,8:1 — мало для текста (WCAG AA ≥ 4,5:1).
+  // Для ссылок и текстовых акцентов — тёмный оттенок того же тона, 5,7:1.
+  --app-accent-text: #056ba7;
+
+  // Поверхности
+  --app-bg: #f1f5f8;
+  --app-surface: #fff;
+  --app-hover: #f2f4f7;
+  --app-border: #e6e9ee;
+  --app-control-border: #c9d1da;
+
+  // Текст
+  --app-text: #1f2733;
+  --app-text-secondary: #56616f;
+
+  // Состояния
+  --app-danger: var(--ant-error-color);
+  --app-danger-bg: #fdf1f1;
+  --app-danger-border: #f2b8b9;
+
+  // Геометрия (скругления — в ng-zorro-theme.less, общие с NG-ZORRO)
+  --app-shadow-sm: 0 1px 2px rgb(31 39 51 / 6%);
+  --app-shadow-md: 0 6px 20px rgb(31 39 51 / 12%);
+}

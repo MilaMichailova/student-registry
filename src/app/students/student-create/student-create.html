@@ -1,0 +1,24 @@
+<nz-spin [nzSpinning]="saving()" nzSize="large" [attr.aria-busy]="saving()">
+  <div class="student-form-page app-page" [inert]="saving()">
+    <div class="app-page-header">
+      <nz-breadcrumb>
+        <nz-breadcrumb-item>
+          <a routerLink="/students">Студенты</a>
+        </nz-breadcrumb-item>
+        <nz-breadcrumb-item>Новый студент</nz-breadcrumb-item>
+      </nz-breadcrumb>
+    </div>
+
+    <form [formGroup]="form" nz-form nzLayout="vertical" (ngSubmit)="createStudent()" novalidate>
+      <app-student-form-sections [host]="this" />
+
+      <div class="app-form-actions">
+        <button nz-button nzType="default" type="button" (click)="onCancel()">Отмена</button>
+        <button nz-button nzType="primary" type="submit">
+          <nz-icon nzType="save" nzTheme="outline" />
+          Сохранить
+        </button>
+      </div>
+    </form>
+  </div>
+</nz-spin>

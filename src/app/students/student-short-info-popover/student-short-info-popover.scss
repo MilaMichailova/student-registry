@@ -1,0 +1,81 @@
+.short-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  inline-size: min(22rem, calc(100vw - 3rem));
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding-block: 1.5rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  &__name {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  &__summary {
+    color: var(--app-text-secondary);
+    font-size: 0.8125rem;
+  }
+
+  &__status {
+    align-self: flex-start;
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.375rem 1rem;
+    margin: 0;
+
+    dt {
+      color: var(--app-text-secondary);
+    }
+
+    dd {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-block-start: 0.75rem;
+    border-block-start: 1px solid var(--app-border);
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--app-text-secondary);
+  }
+}
+
+.copy-button {
+  display: inline-flex;
+  padding: 0.125rem;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: none;
+  color: var(--app-text-secondary);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--app-text);
+    background: var(--app-hover);
+  }
+}
