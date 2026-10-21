@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:pages": "ng build --base-href /student-registry/ && node -e \"const d='dist/student-registry/browser/';require('fs').copyFileSync(d+'index.html',d+'404.html')\"",
+    "test:ci": "ng test --watch=false",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

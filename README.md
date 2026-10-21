@@ -4,6 +4,8 @@
 
 Бэкенд имитируется HTTP-интерсептором: сервисы работают с `HttpClient`, как с настоящим REST API. Данные вымышленные и хранятся в `localStorage`. Кнопка «Сбросить демо» возвращает исходный набор.
 
+**Демо:** https://milamichailova.github.io/student-registry/
+
 ## Запуск
 
 Нужен Node.js 22+.
@@ -14,6 +16,15 @@ npm start          # http://localhost:4200
 npm test           # unit-тесты (Vitest)
 npm run build      # production-сборка в dist/
 ```
+
+### Публикация
+
+GitHub Actions (`.github/workflows/deploy.yml`) при каждом push в `main`:
+
+1. прогоняет тесты;
+2. собирает приложение под адрес `/student-registry/`;
+3. копирует `index.html` в `404.html`, чтобы прямые ссылки на маршруты открывались;
+4. выкладывает сборку на GitHub Pages.
 
 ## Что показано
 
