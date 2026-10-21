@@ -1,10 +1,10 @@
 <nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
   <nz-collapse-panel
     nzHeader="Личные качества"
-    [nzActive]="active"
-    (nzActiveChange)="onActiveChange($event)"
+    [nzActive]="active()"
+    (nzActiveChange)="active.set($event)"
   >
-    @for (skill of softSkillsArray.controls; track skill; let i = $index) {
+    @for (skill of softSkillsArray().controls; track skill; let i = $index) {
       <nz-form-item>
         <nz-form-control [nzValidateStatus]="skill" nzErrorTip="Заполните поле или удалите его">
           <div class="string-row">

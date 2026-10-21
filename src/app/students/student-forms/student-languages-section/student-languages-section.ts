@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
 import { FormArray, ReactiveFormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -35,32 +28,27 @@ const LANGUAGE_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'Родной'];
   changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class StudentLanguagesSection {
-  @Input({ required: true }) languagesArray!: FormArray<LanguageFormGroup>;
-  @Input({ required: true }) createLanguage!: () => LanguageFormGroup;
-  @Output() languagesChange = new EventEmitter<void>();
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
+  readonly languagesArray = input.required<FormArray<LanguageFormGroup>>();
+  readonly createLanguage = input.required<() => LanguageFormGroup>();
+  readonly languagesChange = output<void>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
 
   readonly levels = LANGUAGE_LEVELS;
 
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
-  }
-
   getLanguageGroup(index: number): LanguageFormGroup {
-    return this.languagesArray.at(index);
+    return this.languagesArray().at(index);
   }
 
   addLanguage(): void {
-    this.languagesArray.push(this.createLanguage());
-    this.languagesArray.markAsDirty();
+    this.languagesArray().push(this.createLanguage()());
+    this.languagesArray().markAsDirty();
     this.languagesChange.emit();
   }
 
   removeLanguage(index: number): void {
-    this.languagesArray.markAsDirty();
-    this.languagesArray.removeAt(index);
+    this.languagesArray().markAsDirty();
+    this.languagesArray().removeAt(index);
     this.languagesChange.emit();
   }
 }

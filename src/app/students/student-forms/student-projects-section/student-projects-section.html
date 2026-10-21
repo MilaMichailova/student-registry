@@ -1,8 +1,8 @@
 <nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
   <nz-collapse-panel
     nzHeader="Учебные проекты"
-    [nzActive]="active"
-    (nzActiveChange)="onActiveChange($event)"
+    [nzActive]="active()"
+    (nzActiveChange)="active.set($event)"
   >
     <ng-template #periodTag let-project>
       @if (project.value.dateStart || project.value.dateEnd) {
@@ -20,17 +20,17 @@
 
     <nz-collapse
       cdkDropList
-      [cdkDropListData]="projectsArray.controls"
+      [cdkDropListData]="projectsArray().controls"
       (cdkDropListDropped)="dropProject($event)"
       class="projects-drop-list"
       [nzBordered]="false"
       nzExpandIconPosition="end"
     >
-      @for (project of projectsArray.controls; track project; let i = $index) {
+      @for (project of projectsArray().controls; track project; let i = $index) {
         <nz-collapse-panel
           [nzHeader]="projectHeader"
           cdkDrag
-          [cdkDragDisabled]="projectsArray.length <= 1"
+          [cdkDragDisabled]="projectsArray().length <= 1"
           [nzActive]="expandedPanels.has(project)"
           (nzActiveChange)="onPanelActiveChange(project, $event)"
           class="project-panel"
@@ -94,7 +94,15 @@
               </nz-form-item>
               <nz-form-item>
                 <nz-form-label>Период по</nz-form-label>
-                <nz-form-control>
+                <!-- Ошибка периода висит на группе проекта, а показывается у поля «по». -->
+                <nz-form-control
+                  [nzValidateStatus]="
+                    project.hasError('dateRange') && project.controls.dateEnd.touched
+                      ? 'error'
+                      : project.controls.dateEnd
+                  "
+                  nzErrorTip="Дата окончания раньше даты начала"
+                >
                   <nz-date-picker formControlName="dateEnd" nzFormat="dd.MM.yyyy" />
                 </nz-form-control>
               </nz-form-item>

@@ -19,7 +19,8 @@ import {
 import { API_URL } from '../shared/api-url';
 import { STUDY_DIRECTIONS, createSeedStudents } from './seed-data';
 
-const STORAGE_KEY = 'student-registry-demo';
+// Версия в ключе: при смене формата или набора данных старые сохранения не подхватываются.
+const STORAGE_KEY = 'student-registry-demo-v2';
 const LATENCY_MS = 400;
 
 /**

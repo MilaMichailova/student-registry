@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -12,12 +12,7 @@ import { StudentForm } from '../student-forms.types';
   changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class StudentContactsSection {
-  @Input({ required: true }) formGroup!: StudentForm;
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
-
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
-  }
+  readonly formGroup = input.required<StudentForm>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
 }

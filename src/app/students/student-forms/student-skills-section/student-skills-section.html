@@ -1,10 +1,10 @@
 <nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
   <nz-collapse-panel
     nzHeader="Технические навыки"
-    [nzActive]="active"
-    (nzActiveChange)="onActiveChange($event)"
+    [nzActive]="active()"
+    (nzActiveChange)="active.set($event)"
   >
-    <div [formGroup]="formGroup" class="app-form-grid">
+    <div [formGroup]="formGroup()" class="app-form-grid">
       @for (field of fields; track field.controlName) {
         <nz-form-item>
           <nz-form-label>{{ field.label }}</nz-form-label>
@@ -15,7 +15,7 @@
               [placeholder]="field.placeholder"
             />
             <div class="tag-preview">
-              @for (tag of parseTags(formGroup.controls[field.controlName].value); track $index) {
+              @for (tag of parseTags(formGroup().controls[field.controlName].value); track $index) {
                 <nz-tag>{{ tag }}</nz-tag>
               }
             </div>

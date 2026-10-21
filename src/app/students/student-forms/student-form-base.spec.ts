@@ -70,6 +70,29 @@ describe('StudentFormBase', () => {
     expect([...component.invalidProjectIndexes()]).toEqual([0]);
   });
 
+  it('период проекта с окончанием раньше начала не даёт сохранить и раскрывает проект', () => {
+    component.fillRequired();
+    const project = component.createProjectGroup();
+    project.patchValue({ dateStart: new Date(2024, 4, 1), dateEnd: new Date(2024, 1, 1) });
+    component.projectsFormControl.push(project);
+
+    expect(component.validate()).toBe(false);
+    expect(project.hasError('dateRange')).toBe(true);
+    expect([...component.invalidProjectIndexes()]).toEqual([0]);
+  });
+
+  it('Enter в поле ввода не отправляет форму, а в textarea работает как обычно', () => {
+    const enterIn = (element: HTMLElement) => {
+      const event = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+      Object.defineProperty(event, 'target', { value: element });
+      component.preventImplicitSubmit(event);
+      return event.defaultPrevented;
+    };
+
+    expect(enterIn(document.createElement('input'))).toBe(true);
+    expect(enterIn(document.createElement('textarea'))).toBe(false);
+  });
+
   it('пустой пункт личных качеств — ошибка, которую нужно исправить или удалить', () => {
     component.fillRequired();
     component.softSkillsFormControl.push(component.createSoftSkillControl());

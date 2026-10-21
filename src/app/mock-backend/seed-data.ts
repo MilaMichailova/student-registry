@@ -44,7 +44,36 @@ const STUDY_FORMS = Object.values(StudyForm);
 const COURSES = Object.values(StudentCourse).filter((course) => course !== StudentCourse.None);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const BASE_DATE = Date.UTC(2004, 0, 15);
+const CURRENT_YEAR = new Date().getFullYear();
+
+/** Год обучения: 1–4 бакалавриат, 5–6 магистратура. */
+const COURSE_YEAR: Record<StudentCourse, number> = {
+  [StudentCourse.None]: 1,
+  [StudentCourse.Bachelor1]: 1,
+  [StudentCourse.Bachelor2]: 2,
+  [StudentCourse.Bachelor3]: 3,
+  [StudentCourse.Bachelor4]: 4,
+  [StudentCourse.Master1]: 5,
+  [StudentCourse.Master2]: 6,
+};
+
+/** Курс, правдоподобный для статуса: выпускник — на последнем курсе, практика — со 3-го. */
+function courseForStatus(status: StudentStatus, index: number): StudentCourse {
+  switch (status) {
+    case StudentStatus.Graduated:
+      return index % 2 === 0 ? StudentCourse.Bachelor4 : StudentCourse.Master2;
+    case StudentStatus.Internship:
+      return index % 2 === 0 ? StudentCourse.Bachelor3 : StudentCourse.Bachelor4;
+    default:
+      return COURSES[index % COURSES.length];
+  }
+}
+
+/** Дата рождения: поступление в 18 лет, плюс годы обучения и разброс в пределах года. */
+function birthDateForCourse(course: StudentCourse, index: number): number {
+  const birthYear = CURRENT_YEAR - 17 - COURSE_YEAR[course];
+  return Date.UTC(birthYear, 0, 1) + ((index * 47) % 365) * DAY_MS;
+}
 
 /** Детерминированный набор вымышленных студентов: одинаковый при каждом сбросе демо. */
 export function createSeedStudents(): Student[] {
@@ -53,18 +82,21 @@ export function createSeedStudents(): Student[] {
     const extraDirection = STUDY_DIRECTIONS[(index + 3) % STUDY_DIRECTIONS.length];
     // Шаг 5 взаимно прост с 24 — каждый человек встречается ровно один раз, но вперемешку.
     const [lastName, firstName, middleName] = PEOPLE[(index * 5) % PEOPLE.length];
-    const course = COURSES[index % COURSES.length];
+    const status = STATUSES[index % STATUSES.length];
+    const course = courseForStatus(status, index);
+    // Номер группы: год поступления и номер потока, например ИТ-233.
+    const entryYear = (CURRENT_YEAR - COURSE_YEAR[course] + 1) % 100;
 
     return {
       studentId: `seed-${index + 1}`,
       lastName,
       firstName,
       middleName,
-      dateOfBirthInUnixMilliseconds: BASE_DATE + index * 47 * DAY_MS,
-      group: `ИТ-${21 + (index % 4)}${(index % 3) + 1}`,
+      dateOfBirthInUnixMilliseconds: birthDateForCourse(course, index),
+      group: `ИТ-${entryYear}${(index % 3) + 1}`,
       directionId: direction.id,
       additionalDirectionIds: index % 3 === 0 ? [extraDirection.id] : [],
-      status: STATUSES[index % STATUSES.length],
+      status,
       studyForm: STUDY_FORMS[index % STUDY_FORMS.length],
       course,
       about: index % 2 === 0 ? 'Интересуется веб-разработкой и командными проектами.' : null,

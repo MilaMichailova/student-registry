@@ -2,10 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  Input,
   OnInit,
   inject,
-  output,
+  input,
+  model,
   signal,
 } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -24,6 +24,7 @@ import {
 } from '../../student.types';
 import { StudentForm } from '../student-forms.types';
 import { StudyDirectionDictionaryService } from '../../api/study-direction-dictionary.service';
+import { isFutureDate } from '../../../shared/utils/date.validators';
 
 type DictionaryState = 'loading' | 'loaded' | 'error';
 
@@ -47,13 +48,14 @@ export class StudentMainInfoSection implements OnInit {
   private readonly directionDictionaryService = inject(StudyDirectionDictionaryService);
   private readonly destroyRef = inject(DestroyRef);
 
-  @Input({ required: true }) formGroup!: StudentForm;
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
+  readonly formGroup = input.required<StudentForm>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
 
   readonly courseOptions = STUDENT_COURSE_OPTIONS;
   readonly statusOptions = STUDENT_STATUS_OPTIONS;
   readonly studyFormOptions = STUDY_FORM_OPTIONS;
+  readonly isFutureDate = isFutureDate;
 
   readonly directionOptions = signal<NzSelectOptionInterface[]>([]);
   readonly dictionaryState = signal<DictionaryState>('loading');
@@ -63,11 +65,6 @@ export class StudentMainInfoSection implements OnInit {
   ngOnInit(): void {
     this.loadDirectionDictionary();
     this.keepAdditionalDirectionsExclusive();
-  }
-
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
   }
 
   /**
@@ -108,8 +105,8 @@ export class StudentMainInfoSection implements OnInit {
    * при выборе основного оно убирается из дополнительных, и наоборот.
    */
   private keepAdditionalDirectionsExclusive(): void {
-    const primary = this.formGroup.controls.directionId;
-    const additional = this.formGroup.controls.additionalDirectionIds;
+    const primary = this.formGroup().controls.directionId;
+    const additional = this.formGroup().controls.additionalDirectionIds;
 
     primary.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((primaryId) => {
       if (primaryId && additional.value.includes(primaryId)) {

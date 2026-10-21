@@ -81,7 +81,16 @@
       >
         <nz-icon nzType="edit" /> Открыть
       </a>
-      <button nz-button nzSize="small" nzDanger type="button" (click)="deleteClick.emit()">
+      <button
+        nz-button
+        nzSize="small"
+        nzDanger
+        type="button"
+        nz-tooltip
+        nzTooltipTitle="Удалить"
+        [attr.aria-label]="'Удалить: ' + fullName()"
+        (click)="deleteClick.emit()"
+      >
         <nz-icon nzType="delete" />
       </button>
     </div>

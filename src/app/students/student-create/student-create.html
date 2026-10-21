@@ -9,7 +9,14 @@
       </nz-breadcrumb>
     </div>
 
-    <form [formGroup]="form" nz-form nzLayout="vertical" (ngSubmit)="createStudent()" novalidate>
+    <form
+      [formGroup]="form"
+      nz-form
+      nzLayout="vertical"
+      (ngSubmit)="createStudent()"
+      (keydown.enter)="preventImplicitSubmit($event)"
+      novalidate
+    >
       <app-student-form-sections [host]="this" />
 
       <div class="app-form-actions">

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
 import { FormArray, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
@@ -28,26 +21,21 @@ import { NzInputModule } from 'ng-zorro-antd/input';
   changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class StudentSoftSkillsSection {
-  @Input({ required: true }) softSkillsArray!: FormArray<FormControl<string | null>>;
-  @Input({ required: true }) createSoftSkill!: () => FormControl<string | null>;
-  @Output() softSkillsChange = new EventEmitter<void>();
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
-
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
-  }
+  readonly softSkillsArray = input.required<FormArray<FormControl<string | null>>>();
+  readonly createSoftSkill = input.required<() => FormControl<string | null>>();
+  readonly softSkillsChange = output<void>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
 
   addSoftSkill(): void {
-    this.softSkillsArray.markAsDirty();
-    this.softSkillsArray.push(this.createSoftSkill());
+    this.softSkillsArray().markAsDirty();
+    this.softSkillsArray().push(this.createSoftSkill()());
     this.softSkillsChange.emit();
   }
 
   removeSoftSkill(index: number): void {
-    this.softSkillsArray.markAsDirty();
-    this.softSkillsArray.removeAt(index);
+    this.softSkillsArray().markAsDirty();
+    this.softSkillsArray().removeAt(index);
     this.softSkillsChange.emit();
   }
 }

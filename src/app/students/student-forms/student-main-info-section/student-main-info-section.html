@@ -1,10 +1,10 @@
 <nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
   <nz-collapse-panel
     nzHeader="Основная информация"
-    [nzActive]="active"
-    (nzActiveChange)="onActiveChange($event)"
+    [nzActive]="active()"
+    (nzActiveChange)="active.set($event)"
   >
-    <div [formGroup]="formGroup" class="main-info-grid">
+    <div [formGroup]="formGroup()" class="main-info-grid">
       <nz-form-item>
         <nz-form-label>Фамилия</nz-form-label>
         <nz-form-control>
@@ -29,15 +29,23 @@
       <nz-form-item>
         <nz-form-label nzRequired>Дата рождения</nz-form-label>
         <nz-form-control
-          [nzValidateStatus]="formGroup.controls.dateOfBirth"
-          nzErrorTip="Поле обязательно для заполнения"
+          [nzValidateStatus]="formGroup().controls.dateOfBirth"
+          [nzErrorTip]="dateOfBirthError"
         >
           <nz-date-picker
             formControlName="dateOfBirth"
             nzPlaceHolder="Выберите дату"
             nzFormat="dd.MM.yyyy"
+            [nzDisabledDate]="isFutureDate"
           />
         </nz-form-control>
+        <ng-template #dateOfBirthError let-control>
+          @if (control?.hasError('required')) {
+            Поле обязательно для заполнения
+          } @else if (control?.hasError('futureDate')) {
+            Дата рождения не может быть в будущем
+          }
+        </ng-template>
       </nz-form-item>
 
       <nz-form-item>
@@ -49,7 +57,10 @@
 
       <nz-form-item>
         <nz-form-label nzRequired>Курс</nz-form-label>
-        <nz-form-control [nzValidateStatus]="formGroup.controls.course" nzErrorTip="Выберите курс">
+        <nz-form-control
+          [nzValidateStatus]="formGroup().controls.course"
+          nzErrorTip="Выберите курс"
+        >
           <nz-select formControlName="course" nzPlaceHolder="Выберите курс">
             @for (option of courseOptions; track option.value) {
               <nz-option [nzLabel]="option.label" [nzValue]="option.value" />
@@ -70,7 +81,7 @@
           <nz-form-item>
             <nz-form-label nzRequired>Направление подготовки</nz-form-label>
             <nz-form-control
-              [nzValidateStatus]="formGroup.controls.directionId"
+              [nzValidateStatus]="formGroup().controls.directionId"
               nzErrorTip="Поле обязательно для заполнения"
             >
               @if (dictionaryState() === 'loaded') {
@@ -114,7 +125,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>Статус</nz-form-label>
         <nz-form-control
-          [nzValidateStatus]="formGroup.controls.status"
+          [nzValidateStatus]="formGroup().controls.status"
           nzErrorTip="Выберите статус"
         >
           <nz-select formControlName="status" nzPlaceHolder="Выберите статус">
@@ -128,7 +139,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>Форма обучения</nz-form-label>
         <nz-form-control
-          [nzValidateStatus]="formGroup.controls.studyForm"
+          [nzValidateStatus]="formGroup().controls.studyForm"
           nzErrorTip="Выберите форму обучения"
         >
           <nz-select formControlName="studyForm" nzPlaceHolder="Выберите форму обучения">

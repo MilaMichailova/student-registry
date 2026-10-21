@@ -17,6 +17,7 @@ import {
 import { StudentCourse, StudentStatus, StudyForm } from '../student.types';
 import { Student, StudentLanguage, StudentProject, StudentSaveRequest } from '../student.models';
 import { telegramValidator } from '../../shared/utils/telegram.validator';
+import { dateRangeValidator, notInFutureValidator } from '../../shared/utils/date.validators';
 import {
   calendarDateToUnixMilliseconds,
   unixMillisecondsToCalendarDate,
@@ -34,7 +35,10 @@ export abstract class StudentFormBase {
   lastNameControl = this.formBuilder.control<string | null>(null);
   firstNameControl = this.formBuilder.control<string | null>(null);
   middleNameControl = this.formBuilder.control<string | null>(null);
-  dateOfBirthControl = this.formBuilder.control<Date | null>(null, [Validators.required]);
+  dateOfBirthControl = this.formBuilder.control<Date | null>(null, [
+    Validators.required,
+    notInFutureValidator(),
+  ]);
   groupControl = this.formBuilder.control<string | null>(null);
   directionIdControl = this.formBuilder.control<string | null>(null, [Validators.required]);
   additionalDirectionIdsControl = this.formBuilder.control<string[]>([]);
@@ -94,6 +98,17 @@ export abstract class StudentFormBase {
     return this.form.valid;
   }
 
+  /**
+   * Enter в поле не отправляет многосекционную форму — сохранение только кнопкой.
+   * Иначе Enter в date-picker отправлял форму раньше, чем picker записывал введённую дату,
+   * и на сервер уходило старое значение. В textarea Enter по-прежнему переносит строку.
+   */
+  preventImplicitSubmit(event: Event): void {
+    if (event.target instanceof HTMLInputElement) {
+      event.preventDefault();
+    }
+  }
+
   isSectionActive(section: StudentFormSection): boolean {
     return this.activeSections().has(section);
   }
@@ -126,24 +141,29 @@ export abstract class StudentFormBase {
 
   /** Новый проект; без аргумента — пустой, с данными — заполненный (при редактировании). */
   createProjectGroup(project?: StudentProject): ProjectFormGroup {
-    return this.formBuilder.group({
-      discipline: [project?.discipline ?? null],
-      projectName: [project?.projectName ?? null],
-      dateStart: [unixMillisecondsToCalendarDate(project?.dateStart), [Validators.required]],
-      dateEnd: [unixMillisecondsToCalendarDate(project?.dateEnd)],
-      role: [project?.role ?? null],
-      technologies: [project?.technologies.join(', ') || null],
-      description: [project?.description ?? null],
-      teamInfo: [project?.teamInfo ?? null],
-      responsibilities: this.formBuilder.array<FormControl<string | null>>(
-        (project?.responsibilities ?? []).map((item) =>
-          this.formBuilder.control<string | null>(item),
+    return this.formBuilder.group(
+      {
+        discipline: [project?.discipline ?? null],
+        projectName: [project?.projectName ?? null],
+        dateStart: [unixMillisecondsToCalendarDate(project?.dateStart), [Validators.required]],
+        dateEnd: [unixMillisecondsToCalendarDate(project?.dateEnd)],
+        role: [project?.role ?? null],
+        technologies: [project?.technologies.join(', ') || null],
+        description: [project?.description ?? null],
+        teamInfo: [project?.teamInfo ?? null],
+        responsibilities: this.formBuilder.array<FormControl<string | null>>(
+          (project?.responsibilities ?? []).map((item) =>
+            this.formBuilder.control<string | null>(item),
+          ),
         ),
-      ),
-      achievements: this.formBuilder.array<FormControl<string | null>>(
-        (project?.achievements ?? []).map((item) => this.formBuilder.control<string | null>(item)),
-      ),
-    }) as ProjectFormGroup;
+        achievements: this.formBuilder.array<FormControl<string | null>>(
+          (project?.achievements ?? []).map((item) =>
+            this.formBuilder.control<string | null>(item),
+          ),
+        ),
+      },
+      { validators: dateRangeValidator('dateStart', 'dateEnd') },
+    ) as ProjectFormGroup;
   }
 
   createLanguageGroup(language?: StudentLanguage): LanguageFormGroup {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -20,9 +20,9 @@ interface SkillField {
   changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class StudentSkillsSection {
-  @Input({ required: true }) formGroup!: StudentForm;
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
+  readonly formGroup = input.required<StudentForm>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
 
   /** Поля навыков — строки через запятую; при сохранении превращаются в массивы. */
   readonly fields: SkillField[] = [
@@ -37,9 +37,4 @@ export class StudentSkillsSection {
   ];
 
   readonly parseTags = parseTags;
-
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
-  }
 }

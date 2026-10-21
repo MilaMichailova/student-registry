@@ -1,23 +1,10 @@
 <div class="app-page">
   <div class="app-page-header">
     <h1 class="app-page-title">Студенты</h1>
-    <div class="app-page-actions">
-      <button
-        nz-button
-        nzType="text"
-        type="button"
-        nz-tooltip
-        nzTooltipTitle="Вернуть исходный набор демо-данных"
-        (click)="resetDemoData()"
-      >
-        <nz-icon nzType="reload" />
-        Сбросить демо
-      </button>
-      <a nz-button nzType="primary" routerLink="/students/new">
-        <nz-icon nzType="plus" />
-        Добавить студента
-      </a>
-    </div>
+    <a nz-button nzType="primary" routerLink="/students/new">
+      <nz-icon nzType="plus" />
+      Добавить студента
+    </a>
   </div>
 
   <div class="filters" role="search">
@@ -38,6 +25,7 @@
       nzMode="multiple"
       nzPlaceHolder="Статус"
       nzAllowClear
+      aria-label="Фильтр по статусу"
       [nzMaxTagCount]="1"
       [ngModel]="statuses()"
       (ngModelChange)="onStatusesChange($event)"
@@ -52,6 +40,7 @@
       nzMode="multiple"
       nzPlaceHolder="Форма обучения"
       nzAllowClear
+      aria-label="Фильтр по форме обучения"
       [nzMaxTagCount]="1"
       [ngModel]="studyForms()"
       (ngModelChange)="onStudyFormsChange($event)"
@@ -68,10 +57,12 @@
     }
   </div>
 
+  <!-- На узком экране второстепенные колонки скрыты, их данные — подписью под ФИО. -->
   <nz-table
     #table
     nzSize="middle"
     nzShowSizeChanger
+    [nzSimple]="compact()"
     [nzFrontPagination]="false"
     [nzData]="page().items"
     [nzTotal]="page().totalItems"
@@ -81,48 +72,53 @@
     [nzLoading]="loading()"
     [nzShowTotal]="totalTemplate"
     [nzNoResult]="emptyTemplate"
-    [nzScroll]="{ x: '1040px' }"
+    [nzScroll]="compact() ? {} : { x: '1080px' }"
     (nzPageIndexChange)="onPageIndexChange($event)"
     (nzPageSizeChange)="onPageSizeChange($event)"
   >
     <thead>
       <tr>
         <th
-          nzWidth="240px"
+          [nzWidth]="compact() ? null : '230px'"
           [nzSortOrder]="sortOrder(Column.FullName)"
           (nzSortOrderChange)="onSortChange(Column.FullName, $event)"
         >
           ФИО
         </th>
-        <th nzWidth="90px">Группа</th>
-        <th
-          [nzSortOrder]="sortOrder(Column.Direction)"
-          (nzSortOrderChange)="onSortChange(Column.Direction, $event)"
-        >
-          Направление
+        @if (!compact()) {
+          <th nzWidth="90px">Группа</th>
+          <th
+            nzWidth="210px"
+            [nzSortOrder]="sortOrder(Column.Direction)"
+            (nzSortOrderChange)="onSortChange(Column.Direction, $event)"
+          >
+            Направление
+          </th>
+          <th
+            nzWidth="160px"
+            [nzSortOrder]="sortOrder(Column.Course)"
+            (nzSortOrderChange)="onSortChange(Column.Course, $event)"
+          >
+            Курс
+          </th>
+          <th
+            nzWidth="180px"
+            [nzSortOrder]="sortOrder(Column.Status)"
+            (nzSortOrderChange)="onSortChange(Column.Status, $event)"
+          >
+            Статус
+          </th>
+          <th
+            nzWidth="120px"
+            [nzSortOrder]="sortOrder(Column.StudyForm)"
+            (nzSortOrderChange)="onSortChange(Column.StudyForm, $event)"
+          >
+            Форма
+          </th>
+        }
+        <th nzWidth="90px" [nzRight]="!compact()">
+          <span class="visually-hidden">Действия</span>
         </th>
-        <th
-          nzWidth="170px"
-          [nzSortOrder]="sortOrder(Column.Course)"
-          (nzSortOrderChange)="onSortChange(Column.Course, $event)"
-        >
-          Курс
-        </th>
-        <th
-          nzWidth="190px"
-          [nzSortOrder]="sortOrder(Column.Status)"
-          (nzSortOrderChange)="onSortChange(Column.Status, $event)"
-        >
-          Статус
-        </th>
-        <th
-          nzWidth="150px"
-          [nzSortOrder]="sortOrder(Column.StudyForm)"
-          (nzSortOrderChange)="onSortChange(Column.StudyForm, $event)"
-        >
-          Форма
-        </th>
-        <th nzWidth="96px" nzRight><span class="visually-hidden">Действия</span></th>
       </tr>
     </thead>
     <tbody>
@@ -134,13 +130,21 @@
               class="name-button"
               nz-popover
               nzPopoverTrigger="click"
-              nzPopoverPlacement="rightTop"
+              [nzPopoverPlacement]="compact() ? 'bottom' : 'rightTop'"
               [nzPopoverContent]="popoverTemplate"
               [nzPopoverVisible]="openedPopoverId() === row.studentId"
               (nzPopoverVisibleChange)="openedPopoverId.set($event ? row.studentId : null)"
             >
               {{ row.fullName }}
             </button>
+            @if (compact()) {
+              <div class="row-meta">
+                {{ row.group || '—' }} · {{ getCourseLabel(row.course) }}
+                <nz-tag [nzColor]="statusColors[row.status]">{{
+                  getStatusLabel(row.status)
+                }}</nz-tag>
+              </div>
+            }
             <ng-template #popoverTemplate>
               <app-student-short-info-popover
                 [studentId]="row.studentId"
@@ -149,14 +153,16 @@
               />
             </ng-template>
           </td>
-          <td>{{ row.group || '—' }}</td>
-          <td>{{ row.directionName || '—' }}</td>
-          <td>{{ getCourseLabel(row.course) }}</td>
-          <td>
-            <nz-tag [nzColor]="statusColors[row.status]">{{ getStatusLabel(row.status) }}</nz-tag>
-          </td>
-          <td>{{ getStudyFormLabel(row.studyForm) }}</td>
-          <td nzRight class="row-actions">
+          @if (!compact()) {
+            <td>{{ row.group || '—' }}</td>
+            <td>{{ row.directionName || '—' }}</td>
+            <td>{{ getCourseLabel(row.course) }}</td>
+            <td>
+              <nz-tag [nzColor]="statusColors[row.status]">{{ getStatusLabel(row.status) }}</nz-tag>
+            </td>
+            <td>{{ getStudyFormLabel(row.studyForm) }}</td>
+          }
+          <td [nzRight]="!compact()" class="row-actions">
             <a
               nz-button
               nzType="text"
@@ -192,8 +198,11 @@
 
   <ng-template #totalTemplate let-total>Всего: {{ total }}</ng-template>
   <ng-template #emptyTemplate>
+    <!-- Пока идёт загрузка, «пусто» ещё неизвестно — показываем только спиннер. -->
     <div class="empty-state">
-      @if (hasFilters()) {
+      @if (loading()) {
+        <p>Загрузка…</p>
+      } @else if (hasFilters()) {
         <p>По заданным условиям никого не нашлось.</p>
         <button nz-button type="button" (click)="resetFilters()">Сбросить фильтры</button>
       } @else {

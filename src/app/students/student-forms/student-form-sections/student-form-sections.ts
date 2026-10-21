@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { StudentFormBase } from '../student-form-base';
 import { StudentMainInfoSection } from '../student-main-info-section/student-main-info-section';
 import { StudentContactsSection } from '../student-contacts-section/student-contacts-section';
@@ -20,41 +20,41 @@ import { StudentSoftSkillsSection } from '../student-soft-skills-section/student
   ],
   template: `
     <app-student-main-info-section
-      [formGroup]="host.form"
-      [active]="host.isSectionActive('main')"
-      (activeChange)="host.setSectionActive('main', $event)"
+      [formGroup]="host().form"
+      [active]="host().isSectionActive('main')"
+      (activeChange)="host().setSectionActive('main', $event)"
     />
     <app-student-contacts-section
-      [formGroup]="host.form"
-      [active]="host.isSectionActive('contacts')"
-      (activeChange)="host.setSectionActive('contacts', $event)"
+      [formGroup]="host().form"
+      [active]="host().isSectionActive('contacts')"
+      (activeChange)="host().setSectionActive('contacts', $event)"
     />
     <app-student-skills-section
-      [formGroup]="host.form"
-      [active]="host.isSectionActive('skills')"
-      (activeChange)="host.setSectionActive('skills', $event)"
+      [formGroup]="host().form"
+      [active]="host().isSectionActive('skills')"
+      (activeChange)="host().setSectionActive('skills', $event)"
     />
     <app-student-projects-section
-      [projectsArray]="host.projectsFormControl"
+      [projectsArray]="host().projectsFormControl"
       [createProject]="createProject"
-      [invalidProjectIndexes]="host.invalidProjectIndexes()"
-      [active]="host.isSectionActive('projects')"
-      (activeChange)="host.setSectionActive('projects', $event)"
-      (projectsChange)="host.form.updateValueAndValidity()"
+      [invalidProjectIndexes]="host().invalidProjectIndexes()"
+      [active]="host().isSectionActive('projects')"
+      (activeChange)="host().setSectionActive('projects', $event)"
+      (projectsChange)="host().form.updateValueAndValidity()"
     />
     <app-student-languages-section
-      [languagesArray]="host.languagesFormControl"
+      [languagesArray]="host().languagesFormControl"
       [createLanguage]="createLanguage"
-      [active]="host.isSectionActive('languages')"
-      (activeChange)="host.setSectionActive('languages', $event)"
-      (languagesChange)="host.form.updateValueAndValidity()"
+      [active]="host().isSectionActive('languages')"
+      (activeChange)="host().setSectionActive('languages', $event)"
+      (languagesChange)="host().form.updateValueAndValidity()"
     />
     <app-student-soft-skills-section
-      [softSkillsArray]="host.softSkillsFormControl"
+      [softSkillsArray]="host().softSkillsFormControl"
       [createSoftSkill]="createSoftSkill"
-      [active]="host.isSectionActive('softSkills')"
-      (activeChange)="host.setSectionActive('softSkills', $event)"
-      (softSkillsChange)="host.form.updateValueAndValidity()"
+      [active]="host().isSectionActive('softSkills')"
+      (activeChange)="host().setSectionActive('softSkills', $event)"
+      (softSkillsChange)="host().form.updateValueAndValidity()"
     />
   `,
   styles: `
@@ -67,10 +67,10 @@ import { StudentSoftSkillsSection } from '../student-soft-skills-section/student
   changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class StudentFormSections {
-  @Input({ required: true }) host!: StudentFormBase;
+  readonly host = input.required<StudentFormBase>();
 
   // Стрелочные функции — стабильные ссылки для input, с правильным this.
-  readonly createProject = () => this.host.createProjectGroup();
-  readonly createLanguage = () => this.host.createLanguageGroup();
-  readonly createSoftSkill = () => this.host.createSoftSkillControl();
+  readonly createProject = () => this.host().createProjectGroup();
+  readonly createLanguage = () => this.host().createLanguageGroup();
+  readonly createSoftSkill = () => this.host().createSoftSkillControl();
 }

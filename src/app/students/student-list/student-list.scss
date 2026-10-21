@@ -29,6 +29,16 @@
   }
 }
 
+.row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin-block-start: 0.25rem;
+  color: var(--app-text-secondary);
+  font-size: 0.8125rem;
+}
+
 .row--pending {
   opacity: 0.5;
 }

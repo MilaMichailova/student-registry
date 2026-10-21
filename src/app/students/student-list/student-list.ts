@@ -7,7 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, catchError, finalize, map, of, switchMap, tap, timer } from 'rxjs';
@@ -36,9 +37,10 @@ import {
   getStudyFormLabel,
 } from '../student.types';
 import { StudentShortInfoPopover } from '../student-short-info-popover/student-short-info-popover';
-import { resetMockDatabase } from '../../mock-backend/mock-backend.interceptor';
 
 const SEARCH_DEBOUNCE_MS = 400;
+/** Уже этой ширины таблица переходит в компактный вид без горизонтальной прокрутки. */
+const COMPACT_TABLE_QUERY = '(max-width: 768px)';
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 interface ReloadTrigger {
@@ -92,6 +94,13 @@ export class StudentList implements OnInit {
   /** Строки, по которым идёт удаление: кнопки блокируются, повторный клик не уходит на сервер. */
   readonly pendingMutationIds = signal<ReadonlySet<string>>(new Set());
   readonly openedPopoverId = signal<string | null>(null);
+
+  readonly compact = toSignal(
+    inject(BreakpointObserver)
+      .observe(COMPACT_TABLE_QUERY)
+      .pipe(map((state) => state.matches)),
+    { initialValue: false },
+  );
 
   readonly hasFilters = computed(
     () => !!this.search().trim() || this.statuses().length > 0 || this.studyForms().length > 0,
@@ -163,6 +172,8 @@ export class StudentList implements OnInit {
     // Снятие сортировки возвращает порядок по ФИО, а не «как пришло».
     this.orderByColumn.set(order ? column : StudentsOrderByColumn.FullName);
     this.orderByDirection.set(order === 'descend' ? OrderByDirection.Desc : OrderByDirection.Asc);
+    // Новый порядок — с начала списка: третья страница старой сортировки уже ничего не значит.
+    this.pageNumber.set(1);
     this.reload();
   }
 
@@ -195,12 +206,6 @@ export class StudentList implements OnInit {
       nzCancelText: 'Отмена',
       nzOnOk: () => this.confirmDelete(row.studentId),
     });
-  }
-
-  resetDemoData(): void {
-    resetMockDatabase();
-    this.resetFilters();
-    this.message.info('Демо-данные восстановлены');
   }
 
   private confirmDelete(studentId: string): void {

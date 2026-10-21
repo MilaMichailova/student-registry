@@ -1,10 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
-  Output,
+  effect,
   inject,
+  input,
+  model,
   output,
 } from '@angular/core';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
@@ -50,34 +50,39 @@ import { ProjectFormGroup } from '../student-forms.types';
 export class StudentProjectsSection {
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  @Input({ required: true }) projectsArray!: FormArray<ProjectFormGroup>;
+  readonly projectsArray = input.required<FormArray<ProjectFormGroup>>();
   /** Фабрика пустого проекта — общая с формой, чтобы валидаторы задавались в одном месте. */
-  @Input({ required: true }) createProject!: () => ProjectFormGroup;
-  @Input() active = false;
-  readonly activeChange = output<boolean>();
-  /** Проекты с ошибками раскрываются после попытки сохранения. */
-  @Input() set invalidProjectIndexes(indexes: ReadonlySet<number>) {
-    indexes.forEach((index) => {
-      const project = this.projectsArray.at(index);
-      if (project) {
-        this.expandedPanels.add(project);
-      }
-    });
-  }
-  @Output() projectsChange = new EventEmitter<void>();
+  readonly createProject = input.required<() => ProjectFormGroup>();
+  /** Раскрыта ли секция; двусторонняя привязка [(active)]. */
+  readonly active = model(false);
+  /** Индексы проектов с ошибками — они раскрываются после попытки сохранения. */
+  readonly invalidProjectIndexes = input<ReadonlySet<number>>(new Set());
+  readonly projectsChange = output<void>();
 
   // Раскрытие храним по ссылке на группу, а не по индексу, — переживает перетаскивание.
   expandedPanels = new Set<ProjectFormGroup>();
   readonly stringLists = PROJECT_STRING_LISTS;
 
+  constructor() {
+    effect(() => {
+      const projects = this.projectsArray();
+      this.invalidProjectIndexes().forEach((index) => {
+        const project = projects.at(index);
+        if (project) {
+          this.expandedPanels.add(project);
+        }
+      });
+    });
+  }
+
   getProjectGroup(index: number): ProjectFormGroup {
-    return this.projectsArray.at(index);
+    return this.projectsArray().at(index);
   }
 
   addProject(): void {
-    const newGroup = this.createProject();
-    this.projectsArray.push(newGroup);
-    this.projectsArray.markAsDirty();
+    const newGroup = this.createProject()();
+    this.projectsArray().push(newGroup);
+    this.projectsArray().markAsDirty();
     this.projectsChange.emit();
     this.expandedPanels.add(newGroup);
   }
@@ -86,11 +91,6 @@ export class StudentProjectsSection {
     const projectName = projectControl.controls.projectName.value;
     const baseTitle = `Проект ${index + 1}`;
     return projectName?.trim() ? `${baseTitle} — ${projectName}` : baseTitle;
-  }
-
-  onActiveChange(active: boolean): void {
-    this.active = active;
-    this.activeChange.emit(active);
   }
 
   onPanelActiveChange(project: ProjectFormGroup, active: boolean): void {
@@ -106,7 +106,7 @@ export class StudentProjectsSection {
     projectIndex: number,
     list: ProjectStringList,
   ): FormArray<FormControl<string | null>> {
-    return this.projectsArray.at(projectIndex).controls[list];
+    return this.projectsArray().at(projectIndex).controls[list];
   }
 
   addListItem(projectIndex: number, list: ProjectStringList): void {
@@ -114,23 +114,23 @@ export class StudentProjectsSection {
   }
 
   removeListItem(projectIndex: number, list: ProjectStringList, index: number): void {
-    this.projectsArray.markAsDirty();
+    this.projectsArray().markAsDirty();
     this.getListArray(projectIndex, list).removeAt(index);
   }
 
   removeProject(index: number): void {
-    const project = this.projectsArray.at(index);
+    const project = this.projectsArray().at(index);
     this.expandedPanels.delete(project);
 
-    this.projectsArray.markAsDirty();
-    this.projectsArray.removeAt(index);
+    this.projectsArray().markAsDirty();
+    this.projectsArray().removeAt(index);
     this.projectsChange.emit();
   }
 
   dropProject(event: CdkDragDrop<ProjectFormGroup[]>): void {
-    moveItemInArray(this.projectsArray.controls, event.previousIndex, event.currentIndex);
-    this.projectsArray.markAsDirty();
-    this.projectsArray.updateValueAndValidity();
+    moveItemInArray(this.projectsArray().controls, event.previousIndex, event.currentIndex);
+    this.projectsArray().markAsDirty();
+    this.projectsArray().updateValueAndValidity();
     this.projectsChange.emit();
   }
 

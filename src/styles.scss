@@ -57,6 +57,13 @@ body {
     }
   }
 
+  &__demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+  }
+
   &__note {
     color: var(--app-text-secondary);
     font-size: 0.8125rem;

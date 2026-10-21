@@ -39,6 +39,7 @@
           nz-form
           nzLayout="vertical"
           (ngSubmit)="saveStudent()"
+          (keydown.enter)="preventImplicitSubmit($event)"
           [inert]="saving()"
           novalidate
         >

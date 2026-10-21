@@ -1,7 +1,7 @@
 <nz-collapse class="app-form-section" [nzBordered]="true" nzExpandIconPosition="end">
-  <nz-collapse-panel nzHeader="Языки" [nzActive]="active" (nzActiveChange)="onActiveChange($event)">
+  <nz-collapse-panel nzHeader="Языки" [nzActive]="active()" (nzActiveChange)="active.set($event)">
     <div class="repeatable-list">
-      @for (language of languagesArray.controls; track language; let i = $index) {
+      @for (language of languagesArray().controls; track language; let i = $index) {
         <nz-card
           nzSize="small"
           class="repeatable-card"
