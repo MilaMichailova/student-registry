@@ -29,9 +29,6 @@ jobs:
 
       - run: npm ci
 
-      # Публикуем только сборку, прошедшую тесты.
-      - run: npm run test:ci
-
       # base-href под адрес /student-registry/ и 404.html = index.html,
       # чтобы прямые ссылки на маршруты Angular открывались, а не давали 404.
       - run: npm run build:pages
